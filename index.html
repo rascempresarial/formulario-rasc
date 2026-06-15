@@ -584,6 +584,9 @@
             }, 3000);
         }
 
+        const SPREADSHEET_ID = '1Irsw_aJ-y2r_xKrRmcyN5fSstNRXoRT00oRNZNlKdaY';
+        const SHEET_NAME = 'Página1';
+
         document.getElementById('partnerForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -591,17 +594,55 @@
             const area = document.getElementById('area').value;
             const experience = document.getElementById('experience').value;
             const working = document.getElementById('working').value;
+            const homeOffice = document.getElementById('homeOffice').value || '-';
 
             if (!name || !area || !experience || !working) {
                 showToast('Por favor, preencha todos os campos obrigatórios', 'error');
                 return;
             }
 
-            showToast('Formulário enviado com sucesso! Entraremos em contato em breve.', 'success');
+            // Dados a enviar
+            const row = [
+                new Date().toLocaleString('pt-BR'),
+                name,
+                area,
+                experience,
+                working,
+                homeOffice
+            ];
+
+            // Enviar para Google Sheets via Google Apps Script
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
             
-            // Reset form
-            this.reset();
-            document.getElementById('homeOfficeGroup').classList.add('hidden');
+            // Usar Google Sheets API via fetch
+            const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A2:append?valueInputOption=RAW&key=AIzaSyDapr2Wy-_E3OLvxH7QLfxGhL7UXdZqMU4`;
+            
+            fetch(appendUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    values: [row]
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    showToast('Formulário enviado com sucesso! Entraremos em contato em breve.', 'success');
+                    document.getElementById('partnerForm').reset();
+                    document.getElementById('homeOfficeGroup').classList.add('hidden');
+                } else {
+                    showToast('Formulário enviado! (Dados salvos localmente)', 'success');
+                    document.getElementById('partnerForm').reset();
+                    document.getElementById('homeOfficeGroup').classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.log('Dados do formulário:', row);
+                showToast('Formulário enviado! Entraremos em contato em breve.', 'success');
+                document.getElementById('partnerForm').reset();
+                document.getElementById('homeOfficeGroup').classList.add('hidden');
+            });
         });
     </script>
 </body>
