@@ -584,8 +584,7 @@
             }, 3000);
         }
 
-        const SPREADSHEET_ID = '1Irsw_aJ-y2r_xKrRmcyN5fSstNRXoRT00oRNZNlKdaY';
-        const SHEET_NAME = 'Página1';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/1ke4luA0A0zSfs1F3oZ30YSoq9FiBytWBp0h1qwlwrPq75eKQIj74Pq4F/usercodeappscript';
 
         document.getElementById('partnerForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -602,43 +601,28 @@
             }
 
             // Dados a enviar
-            const row = [
-                new Date().toLocaleString('pt-BR'),
-                name,
-                area,
-                experience,
-                working,
-                homeOffice
-            ];
+            const data = {
+                'Data/Hora': new Date().toLocaleString('pt-BR'),
+                'Nome': name,
+                'Área de Atuação': area,
+                'Tempo na Área': experience,
+                'Trabalha Atualmente?': working,
+                'Home Office?': homeOffice
+            };
 
-            // Enviar para Google Sheets via Google Apps Script
-            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
-            
-            // Usar Google Sheets API via fetch
-            const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A2:append?valueInputOption=RAW&key=AIzaSyDapr2Wy-_E3OLvxH7QLfxGhL7UXdZqMU4`;
-            
-            fetch(appendUrl, {
+            // Enviar para Google Apps Script
+            fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    values: [row]
-                })
+                body: JSON.stringify(data),
+                mode: 'no-cors'
             })
-            .then(response => {
-                if (response.ok) {
-                    showToast('Formulário enviado com sucesso! Entraremos em contato em breve.', 'success');
-                    document.getElementById('partnerForm').reset();
-                    document.getElementById('homeOfficeGroup').classList.add('hidden');
-                } else {
-                    showToast('Formulário enviado! (Dados salvos localmente)', 'success');
-                    document.getElementById('partnerForm').reset();
-                    document.getElementById('homeOfficeGroup').classList.add('hidden');
-                }
+            .then(() => {
+                showToast('Formulário enviado com sucesso! Entraremos em contato em breve.', 'success');
+                document.getElementById('partnerForm').reset();
+                document.getElementById('homeOfficeGroup').classList.add('hidden');
             })
             .catch(error => {
-                console.log('Dados do formulário:', row);
+                console.error('Erro:', error);
                 showToast('Formulário enviado! Entraremos em contato em breve.', 'success');
                 document.getElementById('partnerForm').reset();
                 document.getElementById('homeOfficeGroup').classList.add('hidden');
